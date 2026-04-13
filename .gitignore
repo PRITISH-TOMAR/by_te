@@ -1,0 +1,61 @@
+
+# ENV FILES (CRITICAL)
+.env
+.env.*
+!.env.example
+
+# NODE MODULES
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# BUILD / DIST
+dist/
+build/
+coverage/
+
+# LOGS
+logs/
+*.log
+
+# OS FILES
+.DS_Store
+Thumbs.db
+
+# IDE / EDITOR
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# DOCKER
+docker-compose.override.yml
+*.pid
+
+# DATABASE / DATA FILES
+*.sql.tmp
+*.db
+*.sqlite
+
+# CACHE
+.cache/
+.tmp/
+
+# TEST OUTPUT
+coverage/
+*.lcov
+
+# PACKAGE LOCK (OPTIONAL)
+# Keep ONE depending on your package manager
+# Uncomment what you DON'T use
+
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# MISC
+*.tgz
+*.bak
+*.old

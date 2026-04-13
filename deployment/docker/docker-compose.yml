@@ -1,0 +1,156 @@
+version: "3.9"
+
+services:
+  app-1:
+    build:
+      context: ../../
+      dockerfile: deployment/docker/Dockerfile
+    container_name: by_te_app_1
+    ports:
+      - "8081:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8080"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    environment:
+      - APP_ENV=local
+      - REDIS_ADDR=redis:6379
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=by_te
+      - REDIS_TIMEOUT_MS=3000
+      - DB_TIMEOUT_MS=5000
+    networks:
+      - app-network
+
+  app-2:
+    build:
+      context: ../../
+      dockerfile: deployment/docker/Dockerfile
+    container_name: by_te_app_2
+    ports:
+      - "8082:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8080"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    environment:
+      - APP_ENV=local
+      - REDIS_ADDR=redis:6379
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=by_te
+      - REDIS_TIMEOUT_MS=3000
+      - DB_TIMEOUT_MS=5000
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: by_te_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:8
+    container_name: by_te_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: by_te
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ../../infra/database/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  migrate:
+    image: migrate/migrate
+    container_name: by_te_migrate
+    volumes:
+      - ../../infra/database/migrations:/migrations
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command:
+      [
+        "-path=/migrations",
+        "-database=mysql://root:root@tcp(mysql:3306)/by_te?multiStatements=true",
+        "up"
+      ]
+    restart: "on-failure"
+    networks:
+      - app-network
+
+  adminer:
+    image: adminer
+    container_name: by_te_adminer
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+    restart: always
+    ports:
+      - "8083:8080"
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:latest
+    container_name: by_te_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      app-1:
+        condition: service_healthy
+      app-2:
+        condition: service_healthy
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge
