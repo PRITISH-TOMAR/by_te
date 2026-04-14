@@ -16,8 +16,11 @@ services:
       migrate:
         condition: service_completed_successfully
     restart: unless-stopped
+    volumes:
+      - ../../apps/api:/app
+      - /app/node_modules
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8080"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -50,8 +53,11 @@ services:
       migrate:
         condition: service_completed_successfully
     restart: unless-stopped
+    volumes:
+      - ../../apps/api:/app
+      - /app/node_modules
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8080"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
       interval: 5s
       timeout: 3s
       retries: 10

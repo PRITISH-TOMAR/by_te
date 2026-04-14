@@ -1,20 +1,19 @@
-# Base image
-FROM node:20-alpine
+FROM node:20
 
-# Set working dir
 WORKDIR /app
 
-# Copy package files first (for caching)
+# copy package files
 COPY apps/api/package*.json ./
 
-# Install dependencies
-RUN npm install --only=production
+RUN npm install
 
-# Copy source code
+# copy source
 COPY apps/api ./
 
-# Expose port
+# build TS → JS
+RUN npm run build
+
 EXPOSE 8080
 
-# Start app
-CMD ["node", "src/server.js"]
+# ✅ RUN COMPILED FILE
+CMD ["npm", "start"]
