@@ -19,6 +19,7 @@ services:
     volumes:
       - ../../apps/api:/app
       - /app/node_modules
+    command: "npm run dev"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
       interval: 5s
@@ -56,6 +57,7 @@ services:
     volumes:
       - ../../apps/api:/app
       - /app/node_modules
+    command: "npm run dev"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
       interval: 5s
@@ -120,7 +122,7 @@ services:
       [
         "-path=/migrations",
         "-database=mysql://root:root@tcp(mysql:3306)/by_te?multiStatements=true",
-        "up"
+        "up",
       ]
     restart: "on-failure"
     networks:
