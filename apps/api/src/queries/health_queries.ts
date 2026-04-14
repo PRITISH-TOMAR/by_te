@@ -1,0 +1,1 @@
+exports.HEALTH_CHECK = "SELECT 1";

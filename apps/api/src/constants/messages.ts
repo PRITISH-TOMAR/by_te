@@ -1,0 +1,3 @@
+module.exports = {
+  HEALTH_CHECK_SUCCESS: "HEALTH_CHECK_SUCCESS",
+};
