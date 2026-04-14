@@ -34,11 +34,11 @@ export class ApiResponse<T> {
     });
   }
 
-  static failure(
+  static failure<T>(
     message: string,
     errorCode: string = "INTERNAL_ERROR"
-  ): ApiResponse<null> {
-    return new ApiResponse<null>({
+  ): ApiResponse<T> {
+    return new ApiResponse<T>({
       success: false,
       message,
       data: null,

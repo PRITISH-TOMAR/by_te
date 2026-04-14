@@ -21,8 +21,3 @@ export const checkRedis = async (): Promise<HealthStatus> => {
     return "DOWN";
   }
 };
-
-// Server check
-export const checkServer = (): HealthStatus => {
-  return "UP";
-};

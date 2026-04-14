@@ -1,3 +1,3 @@
-module.exports = {
-  HEALTH_CHECK_FAILED: "HEALTH_CHECK_FAILED",
-};
+export const ERROR = {
+  HEALTH_CHECK_FAILURE: "HEALTH_CHECK_FAILURE",
+} as const;

@@ -1,20 +1,26 @@
+import { Response } from "express";
+import { ApiResponse } from "../utils/api_reponse";
 import { HealthResponseDTO } from "../dto/response/health_response";
-import * as healthRepo from "../repositories/health_repository";
+import { HealthStatus } from "../dto/response/health_types";
+import { checkMySQL, checkRedis } from "../repositories/health_repository";
+import { StatusCodes } from "http-status-codes";
+import { ERROR } from "../constants/error";
 
-export const checkHealth = async (): Promise<HealthResponseDTO> => {
-  const [server, database, redis] = await Promise.all([
-    Promise.resolve(healthRepo.checkServer()),
-    healthRepo.checkMySQL(),
-    healthRepo.checkRedis(),
-  ]);
+export const checkHealth = async (
+  res: Response<ApiResponse<HealthResponseDTO>>,
+) => {
+  try {
+    const databaseStatus: HealthStatus = await checkMySQL();
+    const redisStatus: HealthStatus = await checkRedis();
 
-  let status: HealthResponseDTO["status"] = "UP";
+    const data: HealthResponseDTO = {
+      server: "UP",
+      database: databaseStatus,
+      redis: redisStatus,
+    };
 
-  if (database === "DOWN" && redis === "DOWN") {
-    status = "DOWN";
-  } else if (database === "DOWN" || redis === "DOWN") {
-    status = "DEGRADED";
+    return res.status(StatusCodes.OK).json(ApiResponse.success(data));
+  } catch {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(ApiResponse.failure(ERROR.HEALTH_CHECK_FAILURE));
   }
-
-  return { status, server, database, redis };
 };

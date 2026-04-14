@@ -1,3 +1,3 @@
-module.exports = {
+export const MESSAGES = {
   HEALTH_CHECK_SUCCESS: "HEALTH_CHECK_SUCCESS",
-};
+} as const;
