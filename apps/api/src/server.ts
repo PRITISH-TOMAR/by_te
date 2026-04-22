@@ -10,7 +10,7 @@ const PORT: number = Number(process.env.PORT) || 8080;
 app.use(express.json());
 
 // routes
-app.use("/me/", healthRouter);
+app.use("/", healthRouter);
 
 // start server
 
