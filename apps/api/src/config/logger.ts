@@ -38,8 +38,8 @@ const transports: winston.transport[] = [
   new winston.transports.Console(),
 
   // File transports
-  new winston.transports.File({ filename: "../../logs/info.log",  level: "info"  }),
-  new winston.transports.File({ filename: "../../logs/error.log", level: "error" }),
+  new winston.transports.File({ filename: "logs/info.log",  level: "info"  }),
+  new winston.transports.File({ filename: "logs/error.log", level: "error" }),
 
   // CloudWatch transport
   new WinstonCloudWatch({
