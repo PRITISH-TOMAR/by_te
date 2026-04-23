@@ -16,6 +16,8 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      localstack:
+        condition: service_healthy
     restart: unless-stopped
     volumes:
       - ../../apps/api:/app
@@ -37,6 +39,12 @@ services:
       - DB_NAME=by_te
       - REDIS_TIMEOUT_MS=3000
       - DB_TIMEOUT_MS=5000
+      - AWS_REGION=us-east-1
+      - CLOUDWATCH_GROUP=/by-te/api
+      - CLOUDWATCH_STREAM=app-stream
+      - AWS_ACCESS_KEY_ID=test         # LocalStack accepts any value
+      - AWS_SECRET_ACCESS_KEY=test     # LocalStack accepts any value
+
     networks:
       - app-network
 
@@ -55,6 +63,8 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      localstack:
+        condition: service_healthy
     restart: unless-stopped
     volumes:
       - ../../apps/api:/app
@@ -76,6 +86,11 @@ services:
       - DB_NAME=by_te
       - REDIS_TIMEOUT_MS=3000
       - DB_TIMEOUT_MS=5000
+      - AWS_REGION=us-east-1
+      - CLOUDWATCH_GROUP=/by-te/api
+      - CLOUDWATCH_STREAM=app-stream
+      - AWS_ACCESS_KEY_ID=test         # LocalStack accepts any value
+      - AWS_SECRET_ACCESS_KEY=test     # LocalStack accepts any value
     networks:
       - app-network
 
@@ -158,8 +173,25 @@ services:
     networks:
       - app-network
 
+  localstack:
+      image: localstack/localstack:3.0.0
+      container_name: localstack
+      ports:
+        - "4566:4566"
+      environment:
+        - SERVICES=logs
+        - DEFAULT_REGION=us-east-1
+      volumes:
+        - localstack_data:/var/lib/localstack
+      healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
 volumes:
   mysql_data:
+  localstack_data:
 
 networks:
   app-network:
