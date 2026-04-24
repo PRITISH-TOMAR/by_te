@@ -8,7 +8,7 @@ services:
     container_name: by_te_app_1
     ports:
       - "8081:8080"
-      - "9229:9229"    
+      - "9229:9229"
     depends_on:
       redis:
         condition: service_healthy
@@ -42,8 +42,8 @@ services:
       - AWS_REGION=us-east-1
       - CLOUDWATCH_GROUP=/by-te/api
       - CLOUDWATCH_STREAM=app-stream
-      - AWS_ACCESS_KEY_ID=test         # LocalStack accepts any value
-      - AWS_SECRET_ACCESS_KEY=test     # LocalStack accepts any value
+      - AWS_ACCESS_KEY_ID=test # LocalStack accepts any value
+      - AWS_SECRET_ACCESS_KEY=test # LocalStack accepts any value
 
     networks:
       - app-network
@@ -55,7 +55,7 @@ services:
     container_name: by_te_app_2
     ports:
       - "8082:8080"
-      - "9230:9229"    
+      - "9230:9229"
     depends_on:
       redis:
         condition: service_healthy
@@ -89,8 +89,8 @@ services:
       - AWS_REGION=us-east-1
       - CLOUDWATCH_GROUP=/by-te/api
       - CLOUDWATCH_STREAM=app-stream
-      - AWS_ACCESS_KEY_ID=test         # LocalStack accepts any value
-      - AWS_SECRET_ACCESS_KEY=test     # LocalStack accepts any value
+      - AWS_ACCESS_KEY_ID=test # LocalStack accepts any value
+      - AWS_SECRET_ACCESS_KEY=test # LocalStack accepts any value
     networks:
       - app-network
 
@@ -99,6 +99,9 @@ services:
     container_name: by_te_redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -174,24 +177,28 @@ services:
       - app-network
 
   localstack:
-      image: localstack/localstack:3.0.0
-      container_name: localstack
-      ports:
-        - "4566:4566"
-      environment:
-        - SERVICES=logs
-        - DEFAULT_REGION=us-east-1
-      volumes:
-        - localstack_data:/var/lib/localstack
-      healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
-        interval: 10s
-        timeout: 5s
-        retries: 5
+    image: localstack/localstack:3.0.0
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: logs
+      DEFAULT_REGION: us-east-1
+      LOCALSTACK_URL: http://localstack:4566
+    volumes:
+      - localstack_data:/var/lib/localstack
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
 
 volumes:
   mysql_data:
   localstack_data:
+  redis_data:
 
 networks:
   app-network:

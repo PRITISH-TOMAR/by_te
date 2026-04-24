@@ -1,4 +1,4 @@
-CREATE TABLE resources (
+CREATE TABLE IF NOT EXISTS resources(
     id BIGINT UNSIGNED PRIMARY KEY, -- from Redis
 
     user_id BIGINT UNSIGNED NOT NULL,
