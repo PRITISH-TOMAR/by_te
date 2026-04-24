@@ -1,5 +1,6 @@
 import express, { Application } from "express";
 import healthRouter from "./routes/health_routes";
+import resourceRouter from "./routes/resource_routes";
 import dotenv from "dotenv";
 import client, { connectRedis } from "./config/redis";
 import pool from "./config/mysql";
@@ -18,6 +19,7 @@ app.use(requestLogger);
 
 // routes
 app.use("/", healthRouter);
+app.use("/resource", resourceRouter);
 
 // bootstrap
 const bootstrap = async (): Promise<void> => {
