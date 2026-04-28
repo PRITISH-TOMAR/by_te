@@ -1,6 +1,5 @@
-export class ShortenedResponseDTO {
+export class ShortenRequestDTO {
   originalUrl: string;
-  shortenedUrl: string;
   expiresAt?: Date;
   customAlias?: string;
   password?: string;
@@ -9,7 +8,6 @@ export class ShortenedResponseDTO {
 
   constructor({
     originalUrl,
-    shortenedUrl,
     expiresAt,
     customAlias,
     password,
@@ -17,7 +15,6 @@ export class ShortenedResponseDTO {
     updatedAt,
   }: {
     originalUrl: string;
-    shortenedUrl: string;
     expiresAt?: Date;
     customAlias?: string;
     password?: string;
@@ -25,7 +22,6 @@ export class ShortenedResponseDTO {
     updatedAt: Date;
   }) {
     this.originalUrl = originalUrl;
-    this.shortenedUrl = shortenedUrl;
     this.expiresAt = expiresAt;
     this.customAlias = customAlias;
     this.password = password;
