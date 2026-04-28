@@ -1,0 +1,8 @@
+CREATE TABLE server_batches (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  server_ip   VARCHAR(45)  NOT NULL UNIQUE,
+  batch_start INT          NOT NULL,
+  batch_end   INT          NOT NULL,
+  created_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
