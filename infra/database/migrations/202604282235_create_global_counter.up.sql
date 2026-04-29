@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS global_counter (
+  id INT PRIMARY KEY,
+  counter BIGINT NOT NULL
+);
