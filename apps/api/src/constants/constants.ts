@@ -7,4 +7,7 @@ export const constants = {
   BATCH_SIZE: 1000,
   URL_CACHE_TTL: 3600,
   BATCH_REDIS_TTL: 86400,
+  REDIS_COUNTER_KEY : "global_counter",
+  PREFETCH_THRESHOLD: 0.8,
+  
 };
