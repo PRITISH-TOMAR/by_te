@@ -1,43 +1,37 @@
-export class ShortenRequestDTO {
-  userId?: number;
-  originalUrl: string;
-  resourceType?: "LINK" | "QR";
-  activateAt?: Date;
-  expiresAt?: Date;
-  customAlias?: string;
-  password?: string;
-  createdAt: Date;
-  updatedAt: Date;
+import { z } from "zod";
+import SchemaHelper from "../../../utils/schema_helper"
 
-  constructor({
-    userId,
-    originalUrl,
-    resourceType,
-    activateAt,
-    expiresAt,
-    customAlias,
-    password,
-    createdAt,
-    updatedAt,
-  }: {
-    userId?: number;
-    originalUrl: string;
-    resourceType?: "LINK" | "QR";
-    activateAt?: Date;
-    expiresAt?: Date;
-    customAlias?: string;
-    password?: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }) {
-    this.userId = userId;
-    this.originalUrl = originalUrl;
-    this.resourceType = resourceType;
-    this.activateAt = activateAt;
-    this.expiresAt = expiresAt;
-    this.customAlias = customAlias;
-    this.password = password;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
-  }
-}
+export const ShortenRequestSchema = z
+  .object({
+    originalUrl: SchemaHelper.urlSchema,
+
+    resourceType: z.enum(["LINK", "QR"]).optional(),
+
+    activateAt: SchemaHelper.dateSchema.optional(),
+
+    expiresAt: SchemaHelper.dateSchema.optional(),
+
+    customAlias: z
+      .string()
+      .min(3, "customAlias must be at least 3 characters")
+      .max(7, "customAlias must be at most 50 characters")
+      .regex(/^[A-Za-z0-9_-]+$/, "customAlias can only contain A-Za-z0-9-_")
+      .optional(),
+
+    password: z
+      .string()
+      .min(6, "password must be at least 6 characters")
+      .optional(),
+  })
+  .refine(
+    (data) =>
+      !data.activateAt ||
+      !data.expiresAt ||
+      data.expiresAt > data.activateAt,
+    {
+      message: "expiresAt must be greater than activateAt",
+      path: ["expiresAt"],
+    }
+  );
+
+export type ShortenRequestDTO = z.infer<typeof ShortenRequestSchema>;
