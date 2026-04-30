@@ -1,5 +1,8 @@
 CREATE TABLE IF NOT EXISTS resources(
-    id BIGINT UNSIGNED PRIMARY KEY, -- from Redis
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+
+    -- Redis generated counter (for batching / sequencing)
+    counter_id BIGINT UNSIGNED NOT NULL,
 
     user_id BIGINT UNSIGNED NULL,
 
@@ -26,6 +29,10 @@ CREATE TABLE IF NOT EXISTS resources(
         ON DELETE CASCADE,
 
     UNIQUE KEY uniq_resources_short_code (short_code),
+
+    -- optional but recommended (prevents duplicate Redis assignment bugs)
+    UNIQUE KEY uniq_resources_counter_id (counter_id),
+
     INDEX idx_resources_user_id (user_id),
     INDEX idx_resources_active (is_active),
     INDEX idx_resources_activate_at (activate_at),
