@@ -1,34 +1,41 @@
 import pool from "../config/mysql";
-import {
-  CREATE_URL,
-  GET_SHORT_CODE,
-  GET_CUSTOM_ALIAS,
-} from "../queries/resource_queries";
+import ResourceQueries from "../queries/resource_queries";
 import { ShortenRequestDTO } from "../dto/request/resources/shorten_request_dto";
 
 const findByShortCode = async (shortCode: string) => {
-  const [rows]: any = await pool.query(GET_SHORT_CODE, [shortCode]);
+  const [rows]: any = await pool.query(ResourceQueries.GET_SHORT_CODE, [
+    shortCode,
+  ]);
   return rows[0] ?? null;
 };
 
 const findByCustomAlias = async (alias: string) => {
-  const [rows]: any = await pool.query(GET_CUSTOM_ALIAS, [alias]);return rows[0] ?? null;
+  return findByShortCode(alias);
 };
 
-const insertURL = async (
-  request: ShortenRequestDTO,
-  shortCode: string,
-) => {
-  const [result]: any = await pool.query(CREATE_URL, [
-    request.originalUrl,
+const insertURL = async (request: ShortenRequestDTO, shortCode: string) => {
+  await pool.query(ResourceQueries.CREATE_RESOURCE, [
+    request.userId ?? null,
     shortCode,
-    request.customAlias ?? null,
-    request.password    ?? null,
-    request.expiresAt   ?? null,  
+    request.originalUrl,
+    request.resourceType ?? "LINK",
+    request.activateAt ?? null,
+    request.expiresAt ?? null,
   ]);
-  return result.insertId as number;
 };
 
-const ResourceRepository = { findByCustomAlias, findByShortCode, insertURL };
+const findById = async (id: number) => {
+  const [rows]: any = await pool.query(ResourceQueries.GET_RESOURCE_BY_ID, [
+    id,
+  ]);
+  return rows[0] ?? null;
+};
+
+const ResourceRepository = {
+  findByShortCode,
+  findByCustomAlias,
+  insertURL,
+  findById,
+};
 
 export default ResourceRepository;

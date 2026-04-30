@@ -15,6 +15,10 @@ export const checkMySQL = async (): Promise<HealthStatus> => {
 // Redis check
 export const checkRedis = async (): Promise<HealthStatus> => {
   try {
+    if (!redis.isOpen || !redis.isReady) {
+      return "DOWN";
+    }
+
     await redis.ping();
     return "UP";
   } catch {
