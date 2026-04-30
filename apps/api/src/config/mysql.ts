@@ -1,4 +1,6 @@
+import "dotenv/config";
 import mysql, { Pool } from "mysql2/promise";
+import logger from "./logger";
 
 // optional: validate env early
 const {
@@ -22,5 +24,13 @@ const pool: Pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
 });
+
+export const connectMySQL = async (): Promise<void> => {
+  await pool.query("SELECT 1");
+  logger.info({
+    message: "MySQL connected",
+    source: "connectMySQL -> mysql.ts",
+  });
+};
 
 export default pool;

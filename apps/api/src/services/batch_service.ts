@@ -6,10 +6,11 @@ import {
 } from "../utils/modules/batch_module";
 import { numberToShortCode, generateShortCode } from "../utils/resource_helper";
 import logger from "../config/logger";
+import { isRedisConfigured } from "../config/redis";
 
 export type Mode = "redis" | "db";
 
-let mode: Mode = "redis";
+let mode: Mode = isRedisConfigured ? "redis" : "db";
 
 export const getCurrentMode = (): Mode => mode;
 

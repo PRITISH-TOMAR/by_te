@@ -14,6 +14,10 @@ export const claimBatchFromRedis = async (): Promise<{
   start: number;
   end: number;
 }> => {
+  if (!client?.isOpen) {
+    throw new Error("Redis unavailable");
+  }
+
   const key = constants.REDIS_COUNTER_KEY;
 
   // 1. Check if key exists
@@ -42,7 +46,7 @@ export const cacheURL = async (
   tracebackId: string,
 ): Promise<void> => {
   try {
-    if (!client.isOpen) return;
+    if (!client?.isOpen) return;
     await client.set(
       `url:${shortCode}`,
       JSON.stringify({ redirectUrl: originalUrl, expiresAt, shortCode }),
@@ -63,7 +67,7 @@ export const fetchCachedURL = async (
   tracebackId: string,
 ): Promise<string | null> => {
   try {
-    if (!client.isOpen) return null;
+    if (!client?.isOpen) return null;
     const cached = await client.get(`url:${shortCode}`);
     if (!cached) return null;
 
@@ -91,7 +95,7 @@ export const deleteCachedURL = async (
   tracebackId: string,
 ): Promise<void> => {
   try {
-    if (!client.isOpen) return;
+    if (!client?.isOpen) return;
     await client.del(`url:${shortCode}`);
   } catch {
     logger.warn({
