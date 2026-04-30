@@ -16,8 +16,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 
 // routes
-app.use("/", healthRouter);
-app.use("/resource", resourceRouter);
+app.use("/health", healthRouter);
+app.use("/", resourceRouter);
 
 // bootstrap
 const bootstrap = async (): Promise<void> => {

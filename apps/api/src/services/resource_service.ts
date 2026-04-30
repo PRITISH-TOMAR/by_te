@@ -7,7 +7,7 @@ import { ApiResponse } from "../utils/api_reponse";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { getNextShortCode } from "./batch_service";
-import { cacheURL } from "../utils/modules/redis_module";
+import { cacheURL, fetchCachedURL } from "../utils/modules/redis_module";
 import { MESSAGES } from "../constants/messages";
 import { ShortCodeDBO } from "../dbo/short_code";
 import { ERROR } from "../constants/error";
@@ -95,3 +95,63 @@ export const ShortenResource = async (
       .json(ApiResponse.failure(message));
   }
 };
+
+const getResource = async (
+  req: Request<{ shortCode: string }>,
+  res: Response<ApiResponse<ShortenedResponseDTO>>,
+) => {
+  const { shortCode } = req.params;
+  const tracebackId = req.tracebackId;
+
+  try {
+    const cachedUrl = await fetchCachedURL(shortCode, tracebackId);
+    if (cachedUrl) {
+      return res.redirect(cachedUrl);
+    }
+
+    const row = await ResourceRepository.findByShortCode(shortCode);
+    if (!row || !row.is_active) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json(ApiResponse.failure("Resource not found", "RESOURCE_NOT_FOUND"));
+    }
+
+    if (row.activate_at && new Date(row.activate_at) > new Date()) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json(ApiResponse.failure("Resource not found", "RESOURCE_NOT_FOUND"));
+    }
+
+    if (row.expires_at && new Date(row.expires_at) <= new Date()) {
+      return res
+        .status(StatusCodes.GONE)
+        .json(ApiResponse.failure("Resource expired", "RESOURCE_EXPIRED"));
+    }
+
+    cacheURL(shortCode, row.original_url, row.expires_at, tracebackId).catch(
+      (err) =>
+        logger.error({
+          message: "Redis cache failed",
+          tracebackId,
+          error: err,
+        }),
+    );
+
+    return res.redirect(row.original_url);
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+
+    logger.error({
+      message: ERROR.INTERNAL_SERVER_ERROR,
+      tracebackId,
+      error,
+    });
+
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json(ApiResponse.failure(message));
+  }
+};
+
+export { getResource };
