@@ -2,6 +2,7 @@ import { claimBatchFromRedis } from "./redis_module";
 import { constants } from "../../constants/constants";
 import { numberToShortCode } from "../resource_helper";
 import logger from "../../config/logger";
+import { ShortCodeDBO } from "../../dbo/short_code";
 
 // State
 interface Batch {
@@ -57,7 +58,7 @@ export const prefetchNextBatch = async (tracebackId: string): Promise<void> => {
 
 export const getNextShortCodeFromRedis = async (
   tracebackId: string,
-): Promise<string> => {
+): Promise<ShortCodeDBO> => {
   // 1. No active batch → claim one
   if (!activeBatch) {
     const batch = await claimBatchFromRedis();
@@ -96,8 +97,9 @@ export const getNextShortCodeFromRedis = async (
     }
   }
 
+  const currentCounter: number = activeBatch.current;
   // 3. Serve current
-  const shortCode = numberToShortCode(activeBatch.current);
+  const shortCode = numberToShortCode(currentCounter);
   activeBatch.current++;
 
   // 4. Trigger prefetch at 80% usage (non-blocking)
@@ -107,5 +109,5 @@ export const getNextShortCodeFromRedis = async (
     prefetchNextBatch(tracebackId).catch(() => {});
   }
 
-  return shortCode;
+  return new ShortCodeDBO({shortCode, counterId: currentCounter});
 };

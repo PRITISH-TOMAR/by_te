@@ -9,6 +9,8 @@ import { StatusCodes } from "http-status-codes";
 import { getNextShortCode } from "./batch_service";
 import { cacheURL } from "../utils/modules/redis_module";
 import { MESSAGES } from "../constants/messages";
+import { ShortCodeDBO } from "../dbo/short_code";
+import { ERROR } from "../constants/error";
 
 export const ShortenResource = async (
   req: Request<{}, {}, ShortenRequestDTO>,
@@ -18,16 +20,7 @@ export const ShortenResource = async (
   const tracebackId = req.tracebackId;
 
   try {
-    if (!body || !body.originalUrl) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json(
-          ApiResponse.failure("originalUrl is required", "BAD_REQUEST"),
-        );
-    }
-
-    
-
+    let shortCode: ShortCodeDBO;
     if (body.customAlias) {
       const existing = await ResourceRepository.findByShortCode(
         body.customAlias,
@@ -36,32 +29,36 @@ export const ShortenResource = async (
       if (existing) {
         return res
           .status(StatusCodes.CONFLICT)
-          .json(
-            ApiResponse.failure(
-              "Custom alias already taken",
-              "CUSTOM_ALIAS_ALREADY_EXISTS",
-            ),
-          );
+          .json(ApiResponse.failure("Custom alias already taken"));
       }
+
+      shortCode = new ShortCodeDBO({
+        shortCode: body.customAlias,
+        counterId: 0,
+      });
     }
 
     // Generate short code
-    const shortCode = body.customAlias ?? (await getNextShortCode(tracebackId));
- 
+    shortCode = await getNextShortCode(tracebackId);
+
     // Insert into DB
     await ResourceRepository.insertURL(body, shortCode);
 
     // Fetch inserted row
-    const row = await ResourceRepository.findByShortCode(shortCode);
+    const row = await ResourceRepository.findByShortCode(shortCode.shortCode);
 
     // Cache (non-blocking)
-    cacheURL(shortCode, row.original_url, row.expires_at, tracebackId).catch(
-      (err) =>
-        logger.error({
-          message: "Redis cache failed",
-          tracebackId,
-          error: err,
-        }),
+    cacheURL(
+      shortCode.shortCode,
+      row.original_url,
+      row.expires_at,
+      tracebackId,
+    ).catch((err) =>
+      logger.error({
+        message: "Redis cache failed",
+        tracebackId,
+        error: err,
+      }),
     );
 
     logger.info({
@@ -73,7 +70,7 @@ export const ShortenResource = async (
 
     const data = new ShortenedResponseDTO({
       originalUrl: row.original_url,
-      shortenedUrl: `${shortCode}`,
+      shortenedUrl: `${shortCode.shortCode}`,
       expiresAt: row.expires_at,
       customAlias: body.customAlias,
       createdAt: row.created_at,
@@ -88,7 +85,7 @@ export const ShortenResource = async (
       error instanceof Error ? error.message : "Internal server error";
 
     logger.error({
-      message: "Error in ShortenResource",
+      message: ERROR.INTERNAL_SERVER_ERROR,
       tracebackId,
       error,
     });

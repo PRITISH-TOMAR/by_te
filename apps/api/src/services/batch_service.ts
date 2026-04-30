@@ -7,6 +7,7 @@ import {
 import { numberToShortCode, generateShortCode } from "../utils/resource_helper";
 import logger from "../config/logger";
 import { isRedisConfigured } from "../config/redis";
+import { ShortCodeDBO } from "../dbo/short_code";
 
 export type Mode = "redis" | "db";
 
@@ -16,7 +17,7 @@ export const getCurrentMode = (): Mode => mode;
 
 export const getNextShortCode = async (
   tracebackId: string,
-): Promise<string> => {
+): Promise<ShortCodeDBO> => {
   // Redis Mode
   if (mode === "redis") {
     try {
@@ -48,7 +49,10 @@ export const getNextShortCode = async (
       data: { counter },
     });
 
-    return numberToShortCode(counter);
+    return new ShortCodeDBO({
+      shortCode: numberToShortCode(counter),
+      counterId: counter,
+    });
   } catch (err) {
     // Last resort
     logger.error({
@@ -58,6 +62,6 @@ export const getNextShortCode = async (
       data: { error: (err as Error).message },
     });
 
-    return generateShortCode();
+    return new ShortCodeDBO({ shortCode: generateShortCode(), counterId: -1 });
   }
 };

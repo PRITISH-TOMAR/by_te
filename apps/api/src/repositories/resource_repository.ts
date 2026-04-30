@@ -1,6 +1,7 @@
 import pool from "../config/mysql";
 import ResourceQueries from "../queries/resource_queries";
 import { ShortenRequestDTO } from "../dto/request/resources/shorten_request_dto";
+import { ShortCodeDBO } from "../dbo/short_code";
 
 const findByShortCode = async (shortCode: string) => {
   const [rows]: any = await pool.query(ResourceQueries.GET_SHORT_CODE, [
@@ -13,10 +14,10 @@ const findByCustomAlias = async (alias: string) => {
   return findByShortCode(alias);
 };
 
-const insertURL = async (request: ShortenRequestDTO, shortCode: string) => {
+const insertURL = async (request: ShortenRequestDTO, shortCodeObject: ShortCodeDBO) => {
   await pool.query(ResourceQueries.CREATE_RESOURCE, [
-    request.userId ?? null,
-    shortCode,
+    shortCodeObject.counterID,
+    shortCodeObject.shortCode,
     request.originalUrl,
     request.resourceType ?? "LINK",
     request.activateAt ?? null,

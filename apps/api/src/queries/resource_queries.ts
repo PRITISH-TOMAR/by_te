@@ -6,8 +6,7 @@ LIMIT 1`;
 
 const CREATE_RESOURCE: string = `
 INSERT INTO resources (
-  id,
-  user_id,
+  counter_id,
   short_code,
   original_url,
   resource_type,
@@ -17,7 +16,6 @@ INSERT INTO resources (
   password_salt
 )
 VALUES (
-  UUID_SHORT(),
   ?,
   ?,
   ?,

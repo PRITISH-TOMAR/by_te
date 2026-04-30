@@ -1,6 +1,6 @@
 export const ERROR = {
   HEALTH_CHECK_FAILURE: "HEALTH_CHECK_FAILURE",
-
+  INTERNAL_SERVER_ERROR:"INTERNAL_SERVER_ERROR",
 
   CUSTOM_ALIAS_ALREADY_EXIST: "Custom alias already taken",
 } as const;
