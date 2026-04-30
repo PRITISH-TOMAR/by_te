@@ -14,7 +14,7 @@ export const ShortenRequestSchema = z
     customAlias: z
       .string()
       .min(3, "customAlias must be at least 3 characters")
-      .max(7, "customAlias must be at most 50 characters")
+      .max(7, "customAlias must be at most 7 characters")
       .regex(/^[A-Za-z0-9_-]+$/, "customAlias can only contain A-Za-z0-9-_")
       .optional(),
 
