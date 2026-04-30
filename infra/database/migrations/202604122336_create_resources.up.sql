@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS resources(
     id BIGINT UNSIGNED PRIMARY KEY, -- from Redis
 
-    user_id BIGINT UNSIGNED NOT NULL,
+    user_id BIGINT UNSIGNED NULL,
 
     short_code VARCHAR(20) NOT NULL,
     original_url TEXT NOT NULL,
