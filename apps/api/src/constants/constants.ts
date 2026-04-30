@@ -4,7 +4,7 @@ export const constants = {
 
   // BATCH CONFIG
   DEFAULT_IP: "127.0.0.1",
-  BATCH_SIZE: 1000,
+  BATCH_SIZE: 100,
   URL_CACHE_TTL: 3600,
   BATCH_REDIS_TTL: 86400,
   REDIS_COUNTER_KEY : "global_counter",
