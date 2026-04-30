@@ -1,4 +1,5 @@
 import express, { Application } from "express";
+import "./types/express";
 import healthRouter from "./routes/health_routes";
 import resourceRouter from "./routes/resource_routes";
 import dotenv from "dotenv";
@@ -24,17 +25,25 @@ app.use("/resource", resourceRouter);
 // bootstrap
 const bootstrap = async (): Promise<void> => {
   try {
-    await connectRedis();
-    logger.info({
-      message: "Redis connected",
-      source:  "bootstrap → server.ts",
-    });
-
     await pool.query("SELECT 1");
     logger.info({
       message: "MySQL connected",
       source:  "bootstrap → server.ts",
     });
+
+    try {
+      await connectRedis();
+      logger.info({
+        message: "Redis connected",
+        source:  "bootstrap → server.ts",
+      });
+    } catch (err) {
+      logger.warn({
+        message: "Redis unavailable at startup; continuing in DB mode",
+        source:  "bootstrap → server.ts",
+        data:    { error: (err as Error).message },
+      });
+    }
 
     app.listen(PORT, () => {
       logger.info({
@@ -59,10 +68,12 @@ process.on("SIGTERM", async () => {
   logger.info({
     message: "SIGTERM received, shutting down gracefully",
     source:  "process.SIGTERM → server.ts",
-  });
-  await pool.end();
+});
+await pool.end();
+if (client.isOpen) {
   await client.quit();
-  process.exit(0);
+}
+process.exit(0);
 });
 
 bootstrap();
