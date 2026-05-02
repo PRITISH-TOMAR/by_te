@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   app-1:
     build:
@@ -16,11 +14,13 @@ services:
         condition: service_completed_successfully
       localstack:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     restart: unless-stopped
     volumes:
       - ../../apps/api:/app
       - /app/node_modules
-    command: "npm run debug"
+    command: "npm run dev"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
       interval: 5s
@@ -42,6 +42,17 @@ services:
       - CLOUDWATCH_STREAM=app-stream
       - AWS_ACCESS_KEY_ID=test # LocalStack accepts any value
       - AWS_SECRET_ACCESS_KEY=test # LocalStack accepts any value
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_BUCKET=by-te
+      - MINIO_USE_SSL=false
+      - S3_REGION=us-east-1
+      - S3_ENDPOINT=http://minio:9000
+      - S3_ACCESS_KEY_ID=minioadmin
+      - S3_SECRET_ACCESS_KEY=minioadmin
+      - S3_BUCKET=by-te
+      - S3_FORCE_PATH_STYLE=true
 
     networks:
       - app-network
@@ -61,11 +72,13 @@ services:
         condition: service_completed_successfully
       localstack:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     restart: unless-stopped
     volumes:
       - ../../apps/api:/app
       - /app/node_modules
-    command: "npm run debug"
+    command: "npm run dev"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
       interval: 5s
@@ -87,6 +100,17 @@ services:
       - CLOUDWATCH_STREAM=app-stream
       - AWS_ACCESS_KEY_ID=test # LocalStack accepts any value
       - AWS_SECRET_ACCESS_KEY=test # LocalStack accepts any value
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_BUCKET=by-te
+      - MINIO_USE_SSL=false
+      - S3_REGION=us-east-1
+      - S3_ENDPOINT=http://minio:9000
+      - S3_ACCESS_KEY_ID=minioadmin
+      - S3_SECRET_ACCESS_KEY=minioadmin
+      - S3_BUCKET=by-te
+      - S3_FORCE_PATH_STYLE=true
     networks:
       - app-network
 
@@ -190,11 +214,55 @@ services:
       retries: 5
     networks:
       - app-network
+      
+  minio:
+    image: minio/minio:latest
+    container_name: by_te_minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_SERVER_URL: http://localhost:9000
+      MINIO_BROWSER_REDIRECT_URL: http://localhost:9001
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: by_te_minio_init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint:
+      [
+        "/bin/sh",
+        "-c",
+        "mc alias set local http://minio:9000 minioadmin minioadmin && mc mb --ignore-existing local/by-te",
+      ]
+
+    # mc alias set local http://localhost:9000 minioadmin minioadmin
+    # mc anonymous set public local/qrs
+    restart: "no"
+    networks:
+      - app-network
 
 volumes:
   mysql_data:
   localstack_data:
   redis_data:
+  minio_data:
 
 networks:
   app-network:

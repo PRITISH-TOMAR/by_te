@@ -21,3 +21,14 @@ export const generateShortCode = (): string => {
     .map((byte) => charset[byte % charset.length])
     .join("");
 };
+
+
+export const getUTCDateString = (): string => {
+  const now = new Date();
+
+  const day = String(now.getUTCDate()).padStart(2, "0");
+  const month = String(now.getUTCMonth() + 1).padStart(2, "0"); // months are 0-based
+  const year = now.getUTCFullYear();
+
+  return `${day}_${month}_${year}`;
+};

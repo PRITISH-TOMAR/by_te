@@ -5,7 +5,7 @@ import { getResource, ShortenResource } from "../services/resource_service";
 
 const router: Router = express.Router();
 
-router.post("/shorten", validateBody(ShortenRequestSchema), ShortenResource);
+router.post("/", validateBody(ShortenRequestSchema), ShortenResource);
 router.get("/:shortCode", getResource);
 
 export default router;

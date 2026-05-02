@@ -11,6 +11,7 @@ import { cacheURL, fetchCachedURL } from "../utils/modules/redis_module";
 import { MESSAGES } from "../constants/messages";
 import { ShortCodeDBO } from "../dbo/short_code";
 import { ERROR } from "../constants/error";
+import { QrCodeHelper } from "../utils/qr_code_helper";
 
 export const ShortenResource = async (
   req: Request<{}, {}, ShortenRequestDTO>,
@@ -40,6 +41,13 @@ export const ShortenResource = async (
 
     // Generate short code
     shortCode = await getNextShortCode(tracebackId);
+
+    if(body.isQr){
+     const QrCodeUrl =  QrCodeHelper.generateQRCodeURL(body.originalUrl, shortCode.shortCode);
+     
+    }
+
+
 
     // Insert into DB
     await ResourceRepository.insertURL(body, shortCode);

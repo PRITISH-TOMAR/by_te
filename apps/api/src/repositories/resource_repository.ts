@@ -14,12 +14,16 @@ const findByCustomAlias = async (alias: string) => {
   return findByShortCode(alias);
 };
 
-const insertURL = async (request: ShortenRequestDTO, shortCodeObject: ShortCodeDBO) => {
+const insertURL = async (
+  request: ShortenRequestDTO,
+  shortCodeObject: ShortCodeDBO,
+) => {
+  const resourceType: string = request.isQr ? "QR" : "LINK";
   await pool.query(ResourceQueries.CREATE_RESOURCE, [
     shortCodeObject.counterID,
     shortCodeObject.shortCode,
     request.originalUrl,
-    request.resourceType ?? "LINK",
+    resourceType,
     request.activateAt ?? null,
     request.expiresAt ?? null,
   ]);

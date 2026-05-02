@@ -4,8 +4,8 @@ import SchemaHelper from "../../../utils/schema_helper"
 export const ShortenRequestSchema = z
   .object({
     originalUrl: SchemaHelper.urlSchema,
-
-    resourceType: z.enum(["LINK", "QR"]).optional(),
+    
+    isQr: z.boolean().optional().default(false),
 
     activateAt: SchemaHelper.dateSchema.optional(),
 
