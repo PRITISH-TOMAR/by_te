@@ -1,6 +1,7 @@
 export const constants = {
   CHARSET: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_",
   CODE_LENGTH: 6,
+  S3_BUCKET: process.env.S3_BUCKET || "by-te",
 
   // BATCH CONFIG
   DEFAULT_IP: "127.0.0.1",
