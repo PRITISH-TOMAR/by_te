@@ -1,6 +1,30 @@
 import pool from "../../config/mysql";
 import BatchQueries from "../../queries/batch_queries";
 import logger from "../../config/logger";
+import { PoolConnection } from "mysql2/promise";
+
+export const withTransaction = async <T>(
+  fn: (connection: PoolConnection) => Promise<T>,
+  onRollback?: () => Promise<void>,
+): Promise<T> => {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const result = await fn(connection);
+    await connection.commit();
+    return result;
+  } catch (err) {
+    await connection.rollback();
+    if (onRollback) {
+      await onRollback().catch((compensateErr) =>
+        logger.error({ message: "Rollback compensation failed", error: compensateErr }),
+      );
+    }
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
 
 export const claimNextFromDB = async (): Promise<number> => {
   const connection = await pool.getConnection();
