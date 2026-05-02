@@ -2,7 +2,7 @@ import "../types/express";
 import { ShortenRequestDTO } from "../dto/request/resources/shorten_request_dto";
 import { ShortenedResponseDTO } from "../dto/response/resources/shortened_resource";
 import logger from "../config/logger";
-import ResourceRepository from "../repositories/resource_repository";
+import ResourceRepository, { createResourceRepository } from "../repositories/resource_repository";
 import { ApiResponse } from "../utils/api_reponse";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -12,6 +12,7 @@ import { MESSAGES } from "../constants/messages";
 import { ShortCodeDBO } from "../dbo/short_code";
 import { ERROR } from "../constants/error";
 import { QrCodeHelper } from "../utils/qr_code_helper";
+import { withTransaction } from "../utils/modules/db_module";
 
 export const ShortenResource = async (
   req: Request<{}, {}, ShortenRequestDTO>,
@@ -42,15 +43,16 @@ export const ShortenResource = async (
     // Generate short code
     shortCode = await getNextShortCode(tracebackId);
 
-    if(body.isQr){
-     const QrCodeUrl =  QrCodeHelper.generateQRCodeURL(body.originalUrl, shortCode.shortCode);
-     
+    if (body.isQr) {
+      const QrCodeUrl = QrCodeHelper.generateQRCodeURL(body.originalUrl, shortCode.shortCode);
     }
 
-
-
-    // Insert into DB
-    await ResourceRepository.insertURL(body, shortCode);
+    // Transactional DB operations
+    await withTransaction(async (connection) => {
+      const repo = createResourceRepository(connection);
+      await repo.insertURL(body, shortCode);
+      // add more operations here via repo.*
+    });
 
     // Fetch inserted row
     const row = await ResourceRepository.findByShortCode(shortCode.shortCode);

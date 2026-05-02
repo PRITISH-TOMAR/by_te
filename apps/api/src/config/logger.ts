@@ -53,7 +53,7 @@ const transports: winston.transport[] = [
       },
       // LocalStack in dev, real AWS in prod
       ...(process.env.APP_ENV !== "production" && {
-        endpoint: "http://localstack:4566",
+        endpoint: process.env.LOCALSTACK_URL || "http://byte_localstack:4566",
       }),
     },
     jsonMessage: true, // sends structured JSON as-is
