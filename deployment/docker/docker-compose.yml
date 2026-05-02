@@ -12,7 +12,7 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
-      localstack:
+      byte_localstack:
         condition: service_healthy
       minio-init:
         condition: service_completed_successfully
@@ -70,7 +70,7 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
-      localstack:
+      byte_localstack:
         condition: service_healthy
       minio-init:
         condition: service_completed_successfully
@@ -100,6 +100,7 @@ services:
       - CLOUDWATCH_STREAM=app-stream
       - AWS_ACCESS_KEY_ID=test # LocalStack accepts any value
       - AWS_SECRET_ACCESS_KEY=test # LocalStack accepts any value
+      - LOCALSTACK_URL=http://byte_localstack:4566
       - MINIO_ENDPOINT=http://minio:9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
@@ -196,17 +197,17 @@ services:
     networks:
       - app-network
 
-  localstack:
+  byte_localstack:
     image: localstack/localstack:3.0.0
-    container_name: localstack
+    container_name: byte_localstack
     ports:
       - "4566:4566"
     environment:
       SERVICES: logs
       DEFAULT_REGION: us-east-1
-      LOCALSTACK_URL: http://localstack:4566
+      LOCALSTACK_URL: http://byte_localstack:4566
     volumes:
-      - localstack_data:/var/lib/localstack
+      - byte_localstack_data:/var/lib/localstack
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
       interval: 10s
@@ -260,7 +261,7 @@ services:
 
 volumes:
   mysql_data:
-  localstack_data:
+  byte_localstack_data:
   redis_data:
   minio_data:
 
