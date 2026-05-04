@@ -37,6 +37,8 @@ services:
       - DB_NAME=by_te
       - REDIS_TIMEOUT_MS=3000
       - DB_TIMEOUT_MS=5000
+      - JWT_SECRET=local-dev-jwt-secret-change-me
+      - JWT_EXPIRES_IN=1h
       - AWS_REGION=us-east-1
       - CLOUDWATCH_GROUP=/by-te/api
       - CLOUDWATCH_STREAM=app-stream
@@ -95,6 +97,8 @@ services:
       - DB_NAME=by_te
       - REDIS_TIMEOUT_MS=3000
       - DB_TIMEOUT_MS=5000
+      - JWT_SECRET=local-dev-jwt-secret-change-me
+      - JWT_EXPIRES_IN=1h
       - AWS_REGION=us-east-1
       - CLOUDWATCH_GROUP=/by-te/api
       - CLOUDWATCH_STREAM=app-stream

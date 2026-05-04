@@ -1,5 +1,6 @@
 import express, { Application } from "express";
 import "./types/express";
+import authRouter from "./routes/auth_routes";
 import healthRouter from "./routes/health_routes";
 import resourceRouter from "./routes/resource_routes";
 import client, { connectRedis } from "./config/redis";
@@ -17,6 +18,7 @@ app.use(requestLogger);
 
 // routes
 app.use("/health", healthRouter);
+app.use("/auth", authRouter);
 app.use("/", resourceRouter);
 
 // bootstrap
