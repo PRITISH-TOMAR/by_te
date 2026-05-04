@@ -19,7 +19,10 @@ const createResourceRepository = (executor: Pool | PoolConnection = pool) => ({
     return rows[0] ?? null;
   },
 
-  insertURL: async (request: ShortenRequestDTO, shortCodeObject: ShortCodeDBO) => {
+  insertURL: async (
+    request: ShortenRequestDTO,
+    shortCodeObject: ShortCodeDBO,
+  ) => {
     const resourceType: string = request.isQr ? "QR" : "LINK";
     await executor.query(ResourceQueries.CREATE_RESOURCE, [
       shortCodeObject.counterID,
@@ -32,10 +35,18 @@ const createResourceRepository = (executor: Pool | PoolConnection = pool) => ({
   },
 
   findById: async (id: number) => {
-    const [rows]: any = await executor.query(ResourceQueries.GET_RESOURCE_BY_ID, [
-      id,
-    ]);
+    const [rows]: any = await executor.query(
+      ResourceQueries.GET_RESOURCE_BY_ID,
+      [id],
+    );
     return rows[0] ?? null;
+  },
+
+  insertQrCodeUrl: async (qrCodeUrl: string, shortCode: string) => {
+    await executor.query(ResourceQueries.INSERT_QR_CODE_LINK, [
+      shortCode,
+      qrCodeUrl,
+    ]);
   },
 });
 

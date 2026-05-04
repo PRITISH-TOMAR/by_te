@@ -5,7 +5,7 @@ WORKDIR /app
 # copy package files
 COPY apps/api/package*.json ./
 
-RUN npm install
+RUN npm ci
 
 # copy source
 COPY apps/api ./

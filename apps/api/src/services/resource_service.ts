@@ -2,7 +2,9 @@ import "../types/express";
 import { ShortenRequestDTO } from "../dto/request/resources/shorten_request_dto";
 import { ShortenedResponseDTO } from "../dto/response/resources/shortened_resource";
 import logger from "../config/logger";
-import ResourceRepository, { createResourceRepository } from "../repositories/resource_repository";
+import ResourceRepository, {
+  createResourceRepository,
+} from "../repositories/resource_repository";
 import { ApiResponse } from "../utils/api_reponse";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -34,62 +36,63 @@ export const ShortenResource = async (
           .json(ApiResponse.failure("Custom alias already taken"));
       }
 
-      shortCode = new ShortCodeDBO({
-        shortCode: body.customAlias,
-        counterId: 0,
+      shortCode = await getNextShortCode(tracebackId);
+
+      const qrCodeUrl = body.isQr
+        ? await QrCodeHelper.generateQRCodeURL(
+            body.originalUrl,
+            shortCode.shortCode,
+          )
+        : undefined;
+
+      // Transactional DB operations
+      await withTransaction(async (connection) => {
+        const repo = createResourceRepository(connection);
+        await repo.insertURL(body, shortCode);
+
+        if (qrCodeUrl) {
+          await repo.insertQrCodeUrl(qrCodeUrl, shortCode.shortCode);
+        }
       });
-    }
 
-    // Generate short code
-    shortCode = await getNextShortCode(tracebackId);
+      // Fetch inserted row
+      const row = await ResourceRepository.findByShortCode(shortCode.shortCode);
 
-    if (body.isQr) {
-      const QrCodeUrl = QrCodeHelper.generateQRCodeURL(body.originalUrl, shortCode.shortCode);
-    }
-
-    // Transactional DB operations
-    await withTransaction(async (connection) => {
-      const repo = createResourceRepository(connection);
-      await repo.insertURL(body, shortCode);
-      // add more operations here via repo.*
-    });
-
-    // Fetch inserted row
-    const row = await ResourceRepository.findByShortCode(shortCode.shortCode);
-
-    // Cache (non-blocking)
-    cacheURL(
-      shortCode.shortCode,
-      row.original_url,
-      row.expires_at,
-      tracebackId,
-    ).catch((err) =>
-      logger.error({
-        message: "Redis cache failed",
+      // Cache (non-blocking)
+      cacheURL(
+        shortCode.shortCode,
+        row.original_url,
+        row.expires_at,
         tracebackId,
-        error: err,
-      }),
-    );
+      ).catch((err) =>
+        logger.error({
+          message: "Redis cache failed",
+          tracebackId,
+          error: err,
+        }),
+      );
 
-    logger.info({
-      message: "URL shortened successfully",
-      source: "shortenURL → shorten_service",
-      tracebackId,
-      data: { resourceId: row.id, shortCode },
-    });
+      logger.info({
+        message: "URL shortened successfully",
+        source: "shortenURL → shorten_service",
+        tracebackId,
+        data: { resourceId: row.id, shortCode },
+      });
 
-    const data = new ShortenedResponseDTO({
-      originalUrl: row.original_url,
-      shortenedUrl: `${shortCode.shortCode}`,
-      expiresAt: row.expires_at,
-      customAlias: body.customAlias,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    });
+      const data = new ShortenedResponseDTO({
+        originalUrl: row.original_url,
+        shortenedUrl: `${shortCode.shortCode}`,
+        expiresAt: row.expires_at,
+        customAlias: body.customAlias,
+        qrCodeUrl,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      });
 
-    return res
-      .status(StatusCodes.CREATED)
-      .json(ApiResponse.success(data, MESSAGES.URL_SHORTENED_SUCCESSFULLY));
+      return res
+        .status(StatusCodes.CREATED)
+        .json(ApiResponse.success(data, MESSAGES.URL_SHORTENED_SUCCESSFULLY));
+    }
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "Internal server error";

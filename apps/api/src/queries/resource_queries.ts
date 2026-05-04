@@ -32,10 +32,22 @@ FROM resources
 WHERE id = ?
 LIMIT 1`;
 
+const INSERT_QR_CODE_LINK: string = `
+INSERT INTO qr_code_url (
+  short_code, 
+  url
+)
+VALUES (
+  ?,
+  ?
+)`;
+
+
 const ResourceQueries = {
   GET_SHORT_CODE,
   CREATE_RESOURCE,
   GET_RESOURCE_BY_ID,
+  INSERT_QR_CODE_LINK,
 };
 
 export default ResourceQueries;

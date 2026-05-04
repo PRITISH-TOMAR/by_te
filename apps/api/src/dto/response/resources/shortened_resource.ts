@@ -3,6 +3,7 @@ export class ShortenedResponseDTO {
   shortenedUrl: string;
   expiresAt?: Date;
   customAlias?: string;
+  qrCodeUrl?: string;
   password?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -12,6 +13,7 @@ export class ShortenedResponseDTO {
     shortenedUrl,
     expiresAt,
     customAlias,
+    qrCodeUrl,
     password,
     createdAt,
     updatedAt,
@@ -20,6 +22,7 @@ export class ShortenedResponseDTO {
     shortenedUrl: string;
     expiresAt?: Date;
     customAlias?: string;
+    qrCodeUrl?: string;
     password?: string;
     createdAt: Date;
     updatedAt: Date;
@@ -28,6 +31,7 @@ export class ShortenedResponseDTO {
     this.shortenedUrl = shortenedUrl;
     this.expiresAt = expiresAt;
     this.customAlias = customAlias;
+    this.qrCodeUrl = qrCodeUrl;
     this.password = password;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
